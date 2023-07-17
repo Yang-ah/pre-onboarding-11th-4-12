@@ -1,15 +1,16 @@
 import React, { useState } from 'react';
 import { Keyword } from './models';
-import { RecommendKeyword } from './service';
+import { CacheData } from './service';
 
 const App = () => {
   const [searchResults, setSearchResults] = useState<Keyword[]>([]);
 
   const onChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const { value } = event.currentTarget;
-    const list = await RecommendKeyword.get(value);
+    const searchCache = new CacheData('search');
 
-    setSearchResults(list);
+    const response = await searchCache.get(value);
+    setSearchResults(response);
   };
 
   return (

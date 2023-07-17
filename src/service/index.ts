@@ -1,31 +1,65 @@
+import { Keyword } from '../models';
+
 const BASE_URL = process.env.REACT_APP_API_URL;
+const FETCH_DATE = 'Fetch-Date';
+const MAX_AGE = 10_000;
 
-/** TODO : expired 구현 후 삭제
- * getData(): cache & !expired ? cache : fetch();
- * fetch(): api 호출(set expire) & put cache
- */
+interface ICacheData {
+  get(query: string): Promise<Keyword[]>;
+  fetch: (storage: Cache, query: string) => Promise<Keyword[]>;
+  setExpire(response: Response): Promise<Response>;
+  isFresh(cache: Response): boolean;
+}
 
-export class RecommendKeyword {
-  private static storageName = 'search';
+export class CacheData implements ICacheData {
+  // @ts-ignore
+  #storageName: string;
 
-  static async get(query: string) {
+  constructor(storageName: string) {
+    this.#storageName = storageName;
+  }
+
+  isFresh(cache: Response) {
+    const fetchDate = new Date(cache.headers.get(FETCH_DATE)!).getTime();
+    const now = new Date().getTime();
+    return now - fetchDate < MAX_AGE;
+  }
+
+  async get(query: string) {
     const url = new URL('sick', BASE_URL);
     url.searchParams.append('q', query);
 
-    const cacheStorage = await caches.open(this.storageName);
-    const savedData = await cacheStorage.match(query);
+    const cacheStorage = await caches.open(this.#storageName);
+    const cache = await cacheStorage.match(url);
 
-    return savedData
-      ? savedData.json()
-      : this.fetch(cacheStorage, url.toString(), query);
+    return cache && this.isFresh(cache)
+      ? cache.json()
+      : this.fetch(cacheStorage, url.toString());
   }
 
-  static async fetch(storage: Cache, url: string, query: string) {
-    const response = await fetch(url);
+  async setExpire(response: Response) {
+    const newResponse = response.clone();
+    const newBody = await newResponse.blob();
+    const newHeaders = new Headers(newResponse.headers);
+    newHeaders.append(FETCH_DATE, new Date().toISOString());
 
-    storage.put(query, response.clone());
-    console.info('calling api');
+    return new Response(newBody, {
+      status: newResponse.status,
+      statusText: newResponse.statusText,
+      headers: newHeaders,
+    });
+  }
 
-    return response.json();
+  async fetch(storage: Cache, url: string) {
+    try {
+      const response = await fetch(url);
+      const newResponse = await this.setExpire(response);
+
+      storage.put(url, newResponse);
+      console.info('calling api');
+      return response.json();
+    } catch (error) {
+      console.log('fetch error: ', error);
+    }
   }
 }
