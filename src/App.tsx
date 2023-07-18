@@ -17,9 +17,8 @@ const debounce = (callback: any, delay: number) => {
 
 const App = () => {
   const [input, setInput] = useState('');
-  const [keyword, setKeyword] = useState('');
+  const [keyword, setKeyword] = useState({ content: '', index: -1 });
   const [recommendKeywords, setRecommendKeywords] = useState<Keyword[]>([]);
-  const [keywordIndex, setKeywordIndex] = useState(-1);
 
   const getKeywords = useCallback(
     debounce(async (value: string) => {
@@ -33,8 +32,7 @@ const App = () => {
   const changeKeyword = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { value } = event.currentTarget;
     setInput(value);
-    setKeyword(value);
-    setKeywordIndex(-1);
+    setKeyword({ content: value, index: -1 });
 
     if (!value) return;
 
@@ -44,49 +42,57 @@ const App = () => {
   const changeIndex = (event: React.KeyboardEvent<HTMLInputElement>) => {
     const { key } = event;
     const length = recommendKeywords.length;
-    const index = keywordIndex;
 
     if (!length) {
       return;
     }
 
-    if (key === 'ArrowUp' && index < 1) {
-      if (index === 0) {
-        setKeywordIndex(-1);
-        setKeyword(input);
+    if (key === 'ArrowUp' && keyword.index < 1) {
+      if (keyword.index === 0) {
+        setKeyword({ content: input, index: -1 });
         return;
       }
 
-      if (index === -1) {
-        setKeywordIndex(length - 1);
-        setKeyword(recommendKeywords[length - 1].sickNm);
+      if (keyword.index === -1) {
+        setKeyword({
+          content: recommendKeywords[length - 1].sickNm,
+          index: length - 1,
+        });
         return;
       }
     }
 
-    if (key === 'ArrowDown' && length - 1 <= index) {
-      if (index === length - 1) {
-        setKeywordIndex(length);
-        setKeyword(input);
+    if (key === 'ArrowDown' && length - 1 <= keyword.index) {
+      if (keyword.index === length - 1) {
+        setKeyword({
+          content: input,
+          index: length,
+        });
         return;
       }
 
-      if (index === length) {
-        setKeywordIndex(0);
-        setKeyword(recommendKeywords[0].sickNm);
+      if (keyword.index === length) {
+        setKeyword({
+          content: recommendKeywords[0].sickNm,
+          index: 0,
+        });
         return;
       }
     }
 
     if (key === 'ArrowDown') {
-      setKeyword(recommendKeywords[index + 1].sickNm);
-      setKeywordIndex(cur => cur + 1);
+      setKeyword({
+        content: recommendKeywords[keyword.index + 1].sickNm,
+        index: keyword.index + 1,
+      });
       return;
     }
 
     if (key === 'ArrowUp') {
-      setKeyword(recommendKeywords[index - 1].sickNm);
-      setKeywordIndex(cur => cur - 1);
+      setKeyword({
+        content: recommendKeywords[keyword.index - 1].sickNm,
+        index: keyword.index - 1,
+      });
       return;
     }
   };
@@ -101,7 +107,7 @@ const App = () => {
           onKeyDown={changeIndex}
           value={input}
         />
-        <div>{keyword}</div>
+        <div>{keyword.content}</div>
         <button>검색</button>
       </div>
       <h3>추천검색어</h3>
@@ -110,7 +116,7 @@ const App = () => {
         {recommendKeywords.length ? (
           recommendKeywords.map((result, index) => (
             <Input
-              className={index === keywordIndex ? 'dd' : 'yy'}
+              className={index === keyword.index ? 'dd' : 'yy'}
               key={result.sickCd}
               value={result.sickNm}
               readOnly
