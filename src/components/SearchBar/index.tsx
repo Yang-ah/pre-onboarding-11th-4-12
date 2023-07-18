@@ -33,20 +33,16 @@ const SearchBar = () => {
   }, [keywords, index]);
 
   return (
-    <div>
-      <h1>
-        국내 모든 임상시험 검색하고
-        <br />
-        온라인으로 참여하기
-      </h1>
+    <Main>
       <div>
-        <input
-          name="keywordInput"
-          onChange={changeKeyword}
-          onKeyDown={onKeyDown}
-          value={label.input}
-        />
-        <label>{label.keyword}</label>
+        <label>
+          <MainInput
+            name="keywordInput"
+            onChange={changeKeyword}
+            onKeyDown={onKeyDown}
+          />
+          <p>{label.keyword}</p>
+        </label>
         <button>검색</button>
       </div>
       <h3>추천검색어</h3>
@@ -63,7 +59,7 @@ const SearchBar = () => {
           ))}
         {!arrayLength && <div>추천 검색어가 없습니다</div>}
       </div>
-    </div>
+    </Main>
   );
 };
 
@@ -77,4 +73,9 @@ const Input = styled.input`
   }
 `;
 
+const Main = styled.main`
+  width: 490px;
+`;
+
+const MainInput = styled.input``;
 export default SearchBar;
