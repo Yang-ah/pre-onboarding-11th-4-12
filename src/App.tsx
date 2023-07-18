@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Keyword } from './models';
 import { CacheData } from './service';
 import styled from 'styled-components';
@@ -19,8 +19,8 @@ const useGetKeywords = () => {
   const [keywords, setKeywords] = useState<Keyword[]>([]);
 
   const getKeywords = useCallback(
-    debounce(async (value: string, storage: string) => {
-      const Cache = new CacheData(storage);
+    debounce(async (value: string) => {
+      const Cache = new CacheData('search');
       const response = await Cache.get(value);
       setKeywords(response.slice(0, 7));
     }, 1_000),
@@ -30,79 +30,68 @@ const useGetKeywords = () => {
   return { keywords, getKeywords };
 };
 
+const useHandleKeydown = () => {
+  const [index, setIndex] = useState(-1);
+
+  const changeIndex = (key: string, arrayLength: number) => {
+    if (!arrayLength) {
+      return;
+    }
+
+    if (key === 'ArrowUp') {
+      switch (index) {
+        case -1:
+          setIndex(arrayLength - 1);
+          break;
+
+        default:
+          setIndex(cur => cur - 1);
+          break;
+      }
+    }
+
+    if (key === 'ArrowDown') {
+      switch (index) {
+        case arrayLength:
+          setIndex(0);
+          break;
+        default:
+          setIndex(cur => cur + 1);
+          break;
+      }
+    }
+  };
+
+  return { index, setIndex, changeIndex };
+};
+
 const App = () => {
-  const [input, setInput] = useState('');
-  const [keyword, setKeyword] = useState({ content: '', index: -1 });
+  const [label, setLabel] = useState({ input: '', keyword: '' });
 
   const { keywords, getKeywords } = useGetKeywords();
+  const { index, setIndex, changeIndex } = useHandleKeydown();
 
   const changeKeyword = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { value } = event.currentTarget;
-    setInput(value);
-    setKeyword({ content: value, index: -1 });
-
+    setLabel({ input: value, keyword: value });
+    setIndex(-1);
     if (!value) return;
 
     getKeywords(value);
   };
 
-  const changeIndex = (event: React.KeyboardEvent<HTMLInputElement>) => {
+  const onKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
     const { key } = event;
-    const length = keywords.length;
-
-    if (!length) {
-      return;
-    }
-
-    if (key === 'ArrowUp' && keyword.index < 1) {
-      if (keyword.index === 0) {
-        setKeyword({ content: input, index: -1 });
-        return;
-      }
-
-      if (keyword.index === -1) {
-        setKeyword({
-          content: keywords[length - 1].sickNm,
-          index: length - 1,
-        });
-        return;
-      }
-    }
-
-    if (key === 'ArrowDown' && length - 1 <= keyword.index) {
-      if (keyword.index === length - 1) {
-        setKeyword({
-          content: input,
-          index: length,
-        });
-        return;
-      }
-
-      if (keyword.index === length) {
-        setKeyword({
-          content: keywords[0].sickNm,
-          index: 0,
-        });
-        return;
-      }
-    }
-
-    if (key === 'ArrowDown') {
-      setKeyword({
-        content: keywords[keyword.index + 1].sickNm,
-        index: keyword.index + 1,
-      });
-      return;
-    }
-
-    if (key === 'ArrowUp') {
-      setKeyword({
-        content: keywords[keyword.index - 1].sickNm,
-        index: keyword.index - 1,
-      });
-      return;
-    }
+    changeIndex(key, keywords.length);
   };
+
+  useEffect(() => {
+    if (index === -1 || index === keywords.length) {
+      return setLabel({ ...label, keyword: label.input });
+    }
+
+    return setLabel({ ...label, keyword: keywords[index]?.sickNm });
+  }, [keywords, index]);
 
   return (
     <div>
@@ -111,27 +100,24 @@ const App = () => {
         <input
           name="keywordInput"
           onChange={changeKeyword}
-          onKeyDown={changeIndex}
-          value={input}
+          onKeyDown={onKeyDown}
+          value={label.input}
         />
-        <div>{keyword.content}</div>
+        <label>{label.keyword}</label>
         <button>검색</button>
       </div>
       <h3>추천검색어</h3>
       {/**TODO: Remove inline style */}
       <div style={{ display: 'flex', flexDirection: 'column' }}>
-        {keywords.length ? (
-          keywords.map((result, index) => (
+        {keywords.length !== 0 &&
+          keywords.map((word, idx) => (
             <Input
-              className={index === keyword.index ? 'dd' : 'yy'}
-              key={result.sickCd}
-              value={result.sickNm}
+              key={word.sickCd}
+              className={idx === index ? 'dd' : 'yy'}
+              value={word.sickNm}
               readOnly
             />
-          ))
-        ) : (
-          <h1>추천 검색어가 없습니다</h1>
-        )}
+          ))}
       </div>
     </div>
   );
