@@ -15,19 +15,26 @@ const debounce = (callback: any, delay: number) => {
   };
 };
 
-const App = () => {
-  const [input, setInput] = useState('');
-  const [keyword, setKeyword] = useState({ content: '', index: -1 });
-  const [recommendKeywords, setRecommendKeywords] = useState<Keyword[]>([]);
+const useGetKeywords = () => {
+  const [keywords, setKeywords] = useState<Keyword[]>([]);
 
   const getKeywords = useCallback(
-    debounce(async (value: string) => {
-      const searchCache = new CacheData('search');
-      const response = await searchCache.get(value);
-      setRecommendKeywords(response.slice(0, 7));
+    debounce(async (value: string, storage: string) => {
+      const Cache = new CacheData(storage);
+      const response = await Cache.get(value);
+      setKeywords(response.slice(0, 7));
     }, 1_000),
     [],
   );
+
+  return { keywords, getKeywords };
+};
+
+const App = () => {
+  const [input, setInput] = useState('');
+  const [keyword, setKeyword] = useState({ content: '', index: -1 });
+
+  const { keywords, getKeywords } = useGetKeywords();
 
   const changeKeyword = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { value } = event.currentTarget;
@@ -41,7 +48,7 @@ const App = () => {
 
   const changeIndex = (event: React.KeyboardEvent<HTMLInputElement>) => {
     const { key } = event;
-    const length = recommendKeywords.length;
+    const length = keywords.length;
 
     if (!length) {
       return;
@@ -55,7 +62,7 @@ const App = () => {
 
       if (keyword.index === -1) {
         setKeyword({
-          content: recommendKeywords[length - 1].sickNm,
+          content: keywords[length - 1].sickNm,
           index: length - 1,
         });
         return;
@@ -73,7 +80,7 @@ const App = () => {
 
       if (keyword.index === length) {
         setKeyword({
-          content: recommendKeywords[0].sickNm,
+          content: keywords[0].sickNm,
           index: 0,
         });
         return;
@@ -82,7 +89,7 @@ const App = () => {
 
     if (key === 'ArrowDown') {
       setKeyword({
-        content: recommendKeywords[keyword.index + 1].sickNm,
+        content: keywords[keyword.index + 1].sickNm,
         index: keyword.index + 1,
       });
       return;
@@ -90,7 +97,7 @@ const App = () => {
 
     if (key === 'ArrowUp') {
       setKeyword({
-        content: recommendKeywords[keyword.index - 1].sickNm,
+        content: keywords[keyword.index - 1].sickNm,
         index: keyword.index - 1,
       });
       return;
@@ -113,8 +120,8 @@ const App = () => {
       <h3>추천검색어</h3>
       {/**TODO: Remove inline style */}
       <div style={{ display: 'flex', flexDirection: 'column' }}>
-        {recommendKeywords.length ? (
-          recommendKeywords.map((result, index) => (
+        {keywords.length ? (
+          keywords.map((result, index) => (
             <Input
               className={index === keyword.index ? 'dd' : 'yy'}
               key={result.sickCd}
