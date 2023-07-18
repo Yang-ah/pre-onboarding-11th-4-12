@@ -1,4 +1,4 @@
-export type Keyword = {
+export type TKeyword = {
   sickCd: string;
   sickNm: string;
 };

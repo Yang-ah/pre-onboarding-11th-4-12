@@ -1,12 +1,12 @@
-import { Keyword } from '../models';
+import { TKeyword } from '../models';
 
 const BASE_URL = process.env.REACT_APP_API_URL;
 const FETCH_DATE = 'Fetch-Date';
 const MAX_AGE = 120_000;
 
 interface ICacheData {
-  get(query: string): Promise<Keyword[]>;
-  fetch: (storage: Cache, query: string) => Promise<Keyword[]>;
+  get(query: string): Promise<TKeyword[]>;
+  fetch: (storage: Cache, query: string) => Promise<TKeyword[]>;
   setExpire(response: Response): Promise<Response>;
   isFresh(cache: Response): boolean;
 }
