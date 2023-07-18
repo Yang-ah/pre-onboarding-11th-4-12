@@ -2,7 +2,7 @@ import { Keyword } from '../models';
 
 const BASE_URL = process.env.REACT_APP_API_URL;
 const FETCH_DATE = 'Fetch-Date';
-const MAX_AGE = 10_000;
+const MAX_AGE = 120_000;
 
 interface ICacheData {
   get(query: string): Promise<Keyword[]>;
