@@ -139,11 +139,27 @@ interface ICacheData {
 - 로직 위치 : src > hooks > debounce.ts,
 - 활용 hook : src > hooks > useGetKeywords.ts
 
-### debounce를 통해 API 호출 감소
-입력마다 API를 호출하지 않도록 추천 검색어를 받아오는 함수 호출 시, <br>
-delay 시간을 주고, delay 시간(1초) 안에 함수 호출을 하는 경우, <br>
-delay 시간 중에 있던 함수를 마지막에 호출한 새 함수로 변경하였습니다. <br>
-입력값이 없다면 (지워서 아예 없어지는 경우) return하여 함수 호출을 막았습니다. 
+<br>
+
+> **debounce를 통해 API 호출 감소**
+- 입력마다 API를 호출하지 않도록 추천 검색어를 받아오는 함수 호출 시, delay 시간을 주었습니다.
+- delay 시간(1초) 안에 함수 호출을 하는 경우, delay 시간 중에 있던 함수를 마지막에 호출한 새 함수로 변경하였습니다.
+- 입력 값이 없다면 (지워서 아예 없어지는 경우) return하여 함수 호출을 막았습니다. 
+
+```ts
+// debounce.ts
+const debounce = (callback: any, delay: number) => {
+  let finalExecute: any;
+
+  return function (...args: any) {
+    clearTimeout(finalExecute);
+
+    finalExecute = setTimeout(() => {
+      callback.apply(callback, args);
+    }, delay);
+  };
+};
+```
 
 <br>
 <br>
