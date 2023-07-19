@@ -11,7 +11,7 @@ const App = () => {
   const router = (
     <Route>
       <Route path="/" element={<HomePage />} />
-      <Route path="search/:id" element={<SearchPage />} />
+      <Route path="search/:keyword" element={<SearchPage />} />
     </Route>
   );
   const rootRouter = createBrowserRouter(createRoutesFromElements(router));

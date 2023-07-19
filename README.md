@@ -4,6 +4,8 @@ TODO : 과제 소개
 
 ## 시작하기
 
+TODO : 서버 설명
+
 ```
 npm install
 npm run start
