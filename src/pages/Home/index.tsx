@@ -21,8 +21,7 @@ const Wrap = styled.div`
   align-items: center;
 
   width: 100vw;
-  height: 460px;
-  margin-top: 56px;
+  height: 100vh;
   padding: 80px 0 60px;
 
   background-color: ${props => props.theme.BLUE_20};

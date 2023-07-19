@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
-import { useGetKeywords, useHandleKeydown } from '../../hooks';
+import { useClickOutside, useGetKeywords, useHandleKeydown } from '../../hooks';
 import { IconSearch } from '../../assets';
 import { Button } from '../Common';
 
@@ -9,8 +9,9 @@ const SearchBar = () => {
   const navigate = useNavigate();
   const [label, setLabel] = useState({ input: '', keyword: '' });
 
-  const { isLoading, keywords, getKeywords } = useGetKeywords();
+  const { isLoading, setIsLoading, keywords, getKeywords } = useGetKeywords();
   const { index, setIndex, changeIndex } = useHandleKeydown();
+  const { isOpen, setIsOpen, ref } = useClickOutside();
 
   const arrayLength = keywords.length;
 
@@ -20,6 +21,7 @@ const SearchBar = () => {
     setIndex(-1);
     if (!value) return;
 
+    setIsLoading(true);
     getKeywords(value);
   };
 
@@ -42,7 +44,7 @@ const SearchBar = () => {
   }, [keywords, index]);
 
   return (
-    <Wrap>
+    <Wrap ref={ref}>
       <Main>
         <Label>
           <IconSearch />
@@ -51,67 +53,76 @@ const SearchBar = () => {
             onChange={changeKeyword}
             onKeyDown={onKeyDown}
             placeholder="질환명을 입력해주세요."
+            value={label.keyword}
+            onClick={() => setIsOpen(true)}
           />
-          <p>{label.keyword}</p>
         </Label>
         <SearchButton>
           <IconSearch />
         </SearchButton>
       </Main>
-      <FocusWrap>
-        {isLoading && <p>로딩중....</p>}
-        {!label.input && !isLoading && (
-          <>
+      {isOpen && (
+        <FocusWrap>
+          {isLoading && <Article>로딩중....</Article>}
+          {!label.input && !isLoading && (
+            <>
+              <Article>
+                <H3>최근검색어</H3>
+                <ul>
+                  <Li>
+                    <IconSearch />
+                    <p>간암</p>
+                  </Li>
+                  <Li>
+                    <IconSearch />
+                    <p>간암</p>
+                  </Li>
+                </ul>
+              </Article>
+              <Horizon />
+              <Article>
+                <H3>추천 검색어로 검색해보세요.</H3>
+                <ButtonWrap>
+                  {recommend.map((item, index) => (
+                    <Button
+                      key={item + index}
+                      value={item}
+                      onClick={goSearchPage}
+                      children={item}
+                    />
+                  ))}
+                </ButtonWrap>
+              </Article>
+            </>
+          )}
+          {label.input && !isLoading && (
             <Article>
-              <H3>최근검색어</H3>
-              <ul>
-                <Li>
-                  <IconSearch />
-                  <p>간암</p>
-                </Li>
-                <Li>
-                  <IconSearch />
-                  <p>간암</p>
-                </Li>
-              </ul>
+              <Li>
+                <IconSearch />
+                <p>
+                  <strong>{label.input}</strong>
+                </p>
+              </Li>
+              <H3>추천검색어</H3>
+              {arrayLength !== 0 &&
+                keywords.map((word, idx) => (
+                  <Li
+                    key={word.sickCd}
+                    className={idx === index ? 'selected' : 'none'}
+                  >
+                    {word.sickNm}
+                  </Li>
+                ))}
+              {!arrayLength && <div>추천 검색어가 없습니다</div>}
             </Article>
-            <Horizon />
-            <Article>
-              <H3>추천 검색어로 검색해보세요.</H3>
-              <ButtonWrap>
-                <Button onClick={goSearchPage} value="B형간염">
-                  B형간염
-                </Button>
-                <Button>비만</Button>
-                <Button>관절염</Button>
-                <Button>우울증</Button>
-                <Button>식도염</Button>
-              </ButtonWrap>
-            </Article>
-          </>
-        )}
-        {label.input && !isLoading && (
-          <Article>
-            <Li>
-              <IconSearch />
-              <p>
-                <strong>{label.input}</strong>
-              </p>
-            </Li>
-            <H3>추천검색어</H3>
-            {arrayLength !== 0 &&
-              keywords.map((word, idx) => (
-                <Li key={word.sickCd} className={idx === index ? 'dd' : 'yy'}>
-                  {word.sickNm}
-                </Li>
-              ))}
-            {!arrayLength && <div>추천 검색어가 없습니다</div>}
-          </Article>
-        )}
-      </FocusWrap>
+          )}
+        </FocusWrap>
+      )}
     </Wrap>
   );
 };
+
+const recommend = ['B형간염', '비만', '관절염', '우울증', '식도염'];
 
 const Horizon = styled.div`
   width: 100%;
@@ -148,6 +159,7 @@ const FocusWrap = styled.section`
   flex-direction: column;
   box-shadow: rgba(30, 32, 37, 0.1) 0px 2px 10px;
   padding: 24px 0 16px;
+  margin-top: 8px;
 `;
 
 const Article = styled.article`
@@ -166,11 +178,8 @@ const Li = styled.li`
   align-items: center;
   padding: 8px 0;
 
-  &.dd {
-    color: red;
-  }
-  &.yy {
-    color: blue;
+  &.selected {
+    font-weight: 800;
   }
 
   > svg {

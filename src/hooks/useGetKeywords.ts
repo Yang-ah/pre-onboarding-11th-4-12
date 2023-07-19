@@ -23,7 +23,7 @@ const useGetKeywords = () => {
     [],
   );
 
-  return { isLoading, keywords, getKeywords };
+  return { setIsLoading, isLoading, keywords, getKeywords };
 };
 
 export default useGetKeywords;
