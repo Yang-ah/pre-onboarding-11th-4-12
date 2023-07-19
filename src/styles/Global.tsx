@@ -29,8 +29,13 @@ export const GlobalStyle = createGlobalStyle`
     outline: none;
   }
 
+  ul,li {
+    list-style:none;  
+  }
+
   a {
     color: black;
     outline: none;
+    text-decoration: none;
   }
 `;
