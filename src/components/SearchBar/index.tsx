@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { useClickOutside, useGetKeywords, useHandleKeydown } from '../../hooks';
 import { IconSearch } from '../../assets';
-import { Button } from '../Common';
+import { Button, Item } from '../Common';
 
 const SearchBar = () => {
   const navigate = useNavigate();
@@ -15,9 +15,11 @@ const SearchBar = () => {
   const { isOpen, setIsOpen } = useClickOutside(ref);
 
   const arrayLength = keywords.length;
+  const recentWord = localStorage.getItem('recentWord');
 
   const goSearchPage = (path: string) => {
     navigate(`/search/${path}`);
+    localStorage.setItem('recentWord', path);
   };
 
   const onSubmit = (
@@ -29,6 +31,8 @@ const SearchBar = () => {
 
   const onKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
     const { key } = event;
+    if (!label.input || isLoading) return;
+
     changeIndex(key, arrayLength);
   };
 
@@ -36,6 +40,7 @@ const SearchBar = () => {
     const { value } = event.currentTarget;
     setLabel({ input: value, keyword: value });
     setIndex(-1);
+
     if (!value) return;
 
     setIsLoading(true);
@@ -62,6 +67,7 @@ const SearchBar = () => {
             placeholder="질환명을 입력해주세요."
             value={label.keyword}
             onClick={() => setIsOpen(true)}
+            autoComplete="off"
           />
         </Label>
         <SearchButton type="submit" onSubmit={onSubmit}>
@@ -76,16 +82,11 @@ const SearchBar = () => {
             <>
               <Article>
                 <H3>최근검색어</H3>
-                <ul>
-                  <Li>
-                    <IconSearch />
-                    <p>간암</p>
-                  </Li>
-                  <Li>
-                    <IconSearch />
-                    <p>간암</p>
-                  </Li>
-                </ul>
+                {recentWord && (
+                  <Item onClick={() => goSearchPage(recentWord)}>
+                    {recentWord}
+                  </Item>
+                )}
               </Article>
               <Horizon />
               <Article>
@@ -106,22 +107,22 @@ const SearchBar = () => {
 
           {label.input && !isLoading && (
             <Article>
-              <Li onClick={() => goSearchPage(label.input)}>
-                <IconSearch />
-                <p>
-                  <strong>{label.input}</strong>
-                </p>
-              </Li>
+              <Item
+                onClick={() => goSearchPage(label.input)}
+                className="strong"
+              >
+                {label.input}
+              </Item>
               <H3>추천검색어</H3>
               {arrayLength !== 0 &&
                 keywords.map((word, idx) => (
-                  <Li
+                  <Item
                     key={word.sickCd}
                     className={idx === index ? 'selected' : 'none'}
                     onClick={() => goSearchPage(word.sickNm)}
                   >
                     {word.sickNm}
-                  </Li>
+                  </Item>
                 ))}
               {!arrayLength && <div>추천 검색어가 없습니다</div>}
             </Article>
@@ -181,25 +182,6 @@ const H3 = styled.h3`
   font-weight: 400;
   color: ${props => props.theme.GREY_30};
   margin-bottom: 16px;
-`;
-
-const Li = styled.li`
-  display: flex;
-  align-items: center;
-  padding: 8px 0;
-
-  &.selected,
-  &:hover {
-    font-weight: 800;
-    cursor: pointer;
-  }
-
-  > svg {
-    width: 16px;
-    height: 16px;
-    fill: ${props => props.theme.GREY_20};
-    margin-right: 12px;
-  }
 `;
 
 const SearchButton = styled.button`
