@@ -86,7 +86,6 @@
 > cache를 관리하는 class를 만들어서 로컬 캐싱을 구현했습니다. 
 
 
-
 ```ts
 interface ICacheData {
   get(query: string): Promise<TKeyword[]>;
@@ -95,39 +94,39 @@ interface ICacheData {
   isFresh(cache: Response): boolean;
 }
 ```
-- get: 해당 키워드(query)에 대한 추천 검색어를 cache에서 받는 method입니다. 
-- fetch: 해당 키워드(query)에 대한 추천 검색어를 받는 api를 호출하고, cache에 추천 검색어들을 저장하는 method입니다.
-- setExpire: fetch method에서 받은 response를 cache에 저장하기 전, response의 header에 만료시간(expire) 계산을 위한 응답받은시간(FETCH_DATE)을 넣는 method입니다.  
-- isFresh : cache의 신선도 검사를 하는 method입니다.
+- `get`: 해당 키워드(query)에 대한 추천 검색어를 cache에서 받는 method입니다. 
+- `fetch`: 해당 키워드(query)에 대한 추천 검색어를 받는 api를 호출하고, cache에 추천 검색어들을 저장하는 method입니다.
+- `setExpire`: fetch method에서 받은 response를 cache에 저장하기 전, response의 header에 만료시간(expire) 계산을 위한 응답받은시간(FETCH_DATE)을 넣는 method입니다.  
+- `isFresh` : cache의 신선도 검사를 하는 method입니다.
 
+<br>
 
+**코드 흐름** 
+- 캐시에 저장된 해당 키워드에 대한 추천 검색어를 받아오는 함수 get 호출. <br>
+- 만약, 해당 키워드가 없거나, 신선도 검사를 하는 this.isFresh 호출 시 false이면, this.fetch 함수 호출 <br>
+- fetch 함수를 통해 추천 검색어를 받아오는 api 호출 <br>
+- api호출하여 응답 받은 시간을 넣어주는 함수 this.setExpire 호출 <br>
+- 만료시간을 넣은 결과물을 캐시에 저장하고 calling console 호출 <br>
+응답 결과 리턴
 
-> **코드 흐름** <br>
-> 캐시에 저장된 해당 키워드에 대한 추천 검색어를 받아오는 함수 get 호출. <br>
-> 만약, 해당 키워드가 없거나, 신선도 검사를 하는 this.isFresh 호출 시 false이면, this.fetch 함수 호출 <br>
-> fetch 함수를 통해 추천 검색어를 받아오는 api 호출 <br>
-> api호출하여 응답 받은 시간을 넣어주는 함수 this.setExpire 호출 <br>
-> 만료시간을 넣은 결과물을 캐시에 저장하고 calling console 호출 <br>
-> 응답 결과 리턴
 
 
 <br>
 <br>
 
 
-### expire time
-api 호출 시 request header에 max-age를 담아서 호출하였으나 서버에서 받지 않고 있기 때문에,<br>
-api 호출하여 받은 response에 응답 받은 시간을 headers에 포함하여 cache에 저장하고, <br>
-추천 검색어 호출 시 cache에 저장한 시간과 현재 시간 차가 2분으로 설정한 max-age를 넘길 시, <br>
-api 호출을 하였습니다. <br>
+> **expire time**
+- api 호출 시 request header에 max-age를 담아서 호출하였으나 서버에서 받지 않고 있기 때문에 api 호출하여 받은 response에 응답 받은 시간을 headers에 포함하여 cache에 저장하였습니다. <br>
+- 추천 검색어 호출 시 cache에 저장한 시간과 현재 시간 차가 2분으로 설정한 max-age를 넘길 시 api 호출을 하였습니다. <br>
+- 과제 특성 상, expire 체크를 쉽게 하기 위해 2분으로 짧게 설정하였습니다. <br>
 
-과제 특성 상, expire 체크를 쉽게 하기 위해 2분으로 짧게 설정하였습니다. <br>
+<br>
 
-> **코드 흐름** <br>
-> 응답받은 response를 클래스 내의 setExpire 메소드를 통해 새로운 response 객체를 만들고, <br>
-> api호출하여 응답 받은 시간(FETCH_DATA)를 헤더에 넣어서 새 Response 객체를 return<br>
-> 새 Response를 cache에 저장 (fetch 메소드에서)<br>
-> this.isFresh에 cache를 넣으면 현재 시간 - 저장된 캐시의 FETCH_DATA가 2분보다 적을 경우 true, 많을 경우 false를 리턴하여 캐시 만료 여부 결정<br>
+**코드 흐름** 
+- 응답받은 response를 클래스 내의 setExpire 메소드를 통해 새로운 response 객체를 만들고, <br>
+- api호출하여 응답 받은 시간(FETCH_DATA)를 헤더에 넣어서 새 Response 객체를 return<br>
+- 새 Response를 cache에 저장 (fetch 메소드에서)<br>
+- this.isFresh에 cache를 넣으면 현재 시간 - 저장된 캐시의 FETCH_DATA가 2분보다 적을 경우 true, 많을 경우 false를 리턴하여 캐시 만료 여부 결정<br>
 
 <br>
 <br>
@@ -150,22 +149,23 @@ delay 시간 중에 있던 함수를 마지막에 호출한 새 함수로 변경
 <br>
 
 
-## 키보드만으로 추천 검색어들로 이동
+### 키보드만으로 추천 검색어들로 이동
 
 > 키보드만으로 추천 검색어들로 이동 가능하도록 구현, 사용법 README에 기술 
-
 
 - 로직 위치 (hook) : src > hooks > useHandleKeydown.ts
 - 활용 component : src > components > searchBar
 
 
-### 사용법 
+> **사용법**
 
-검색어 입력창 활성화 된 상태에서 화살표UP 키를 누르면, 검색어가 한 칸 위로 이동합니다. <br>
-반대로, 화살표DOWN 키를 누르면, 검색어가 한 칸 아래로 이동합니다. <br>
-검색어의 가장 최상단, 최하단에 도달했을 경우 입력값이 선택됩니다. 
+- 검색어 입력창 활성화 된 상태에서 화살표UP 키를 누르면, 검색어가 한 칸 위로 이동합니다. <br>
+- 반대로, 화살표DOWN 키를 누르면, 검색어가 한 칸 아래로 이동합니다. <br>
+- 검색어의 가장 최상단, 최하단에 도달했을 경우 입력값이 선택됩니다. 
 
-### 코드 흐름
+<br>
+
+**코드 흐름**
 
 ```ts
 const [label, setLabel] = useState({ input: '', keyword: '' });
