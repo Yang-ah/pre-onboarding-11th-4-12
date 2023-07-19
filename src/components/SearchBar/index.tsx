@@ -32,8 +32,10 @@ const SearchBar = () => {
   const onKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
     const { key } = event;
     if (!label.input || isLoading) return;
-
-    changeIndex(key, arrayLength);
+    if (key === 'ArrowUp' || key === 'ArrowDown') {
+      changeIndex(key, arrayLength);
+    }
+    return;
   };
 
   const changeKeyword = (event: React.ChangeEvent<HTMLInputElement>) => {
