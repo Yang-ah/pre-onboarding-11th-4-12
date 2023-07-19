@@ -41,8 +41,6 @@ const SearchBar = () => {
     setLabel({ input: value, keyword: value });
     setIndex(-1);
 
-    if (!value) return;
-
     setIsLoading(true);
     getKeywords(value);
   };
@@ -124,7 +122,7 @@ const SearchBar = () => {
                     {word.sickNm}
                   </Item>
                 ))}
-              {!arrayLength && <div>추천 검색어가 없습니다</div>}
+              {!arrayLength && <div>추천 검색어가 없습니다.</div>}
             </Article>
           )}
         </FocusWrap>

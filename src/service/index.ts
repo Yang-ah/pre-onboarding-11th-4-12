@@ -1,6 +1,6 @@
 import { TKeyword } from '../models';
 
-const BASE_URL = process.env.REACT_APP_API_URL;
+const BASE_URL = 'http://localhost:4000/sick';
 const FETCH_DATE = 'Fetch-Date';
 const MAX_AGE = 120_000;
 
@@ -26,7 +26,7 @@ export class CacheData implements ICacheData {
   }
 
   async get(query: string) {
-    const url = new URL('sick', BASE_URL);
+    const url = new URL(BASE_URL);
     url.searchParams.append('q', query);
 
     const cacheStorage = await caches.open(this.#storageName);

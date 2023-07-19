@@ -10,8 +10,13 @@ const useGetKeywords = () => {
   const getKeywords = useCallback(
     debounce(async (value: string) => {
       setIsLoading(true);
-      const Cache = new CacheData('search');
+
       try {
+        if (!value) {
+          return;
+        }
+
+        const Cache = new CacheData('search');
         const response = await Cache.get(value);
         setKeywords(response.slice(0, 7));
       } catch (error) {
