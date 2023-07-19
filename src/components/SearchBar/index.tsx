@@ -8,7 +8,6 @@ import { Button } from '../Common';
 const SearchBar = () => {
   const navigate = useNavigate();
   const ref = useRef(null);
-
   const [label, setLabel] = useState({ input: '', keyword: '' });
 
   const { isLoading, setIsLoading, keywords, getKeywords } = useGetKeywords();
@@ -16,6 +15,22 @@ const SearchBar = () => {
   const { isOpen, setIsOpen } = useClickOutside(ref);
 
   const arrayLength = keywords.length;
+
+  const goSearchPage = (path: string) => {
+    navigate(`/search/${path}`);
+  };
+
+  const onSubmit = (
+    event: React.FormEvent<HTMLFormElement | HTMLButtonElement>,
+  ) => {
+    event.preventDefault();
+    goSearchPage(label.keyword);
+  };
+
+  const onKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    const { key } = event;
+    changeIndex(key, arrayLength);
+  };
 
   const changeKeyword = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { value } = event.currentTarget;
@@ -27,16 +42,6 @@ const SearchBar = () => {
     getKeywords(value);
   };
 
-  const goSearchPage = (event: React.FormEvent<HTMLButtonElement>) => {
-    const { value } = event.currentTarget;
-    navigate(`/search/${value}`);
-  };
-
-  const onKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
-    const { key } = event;
-    changeIndex(key, arrayLength);
-  };
-
   useEffect(() => {
     if (index === -1 || index === arrayLength || !arrayLength) {
       return setLabel({ ...label, keyword: label.input });
@@ -46,8 +51,8 @@ const SearchBar = () => {
   }, [keywords, index]);
 
   return (
-    <Wrap>
-      <Main>
+    <Wrap ref={ref}>
+      <Form onSubmit={onSubmit}>
         <Label>
           <IconSearch />
           <MainInput
@@ -57,13 +62,13 @@ const SearchBar = () => {
             placeholder="질환명을 입력해주세요."
             value={label.keyword}
             onClick={() => setIsOpen(true)}
-            ref={ref}
           />
         </Label>
-        <SearchButton>
+        <SearchButton type="submit" onSubmit={onSubmit}>
           <IconSearch />
         </SearchButton>
-      </Main>
+      </Form>
+
       {isOpen && (
         <FocusWrap>
           {isLoading && <Article>로딩중....</Article>}
@@ -90,7 +95,7 @@ const SearchBar = () => {
                     <Button
                       key={item + index}
                       value={item}
-                      onClick={goSearchPage}
+                      onClick={() => goSearchPage(item)}
                       children={item}
                     />
                   ))}
@@ -98,9 +103,10 @@ const SearchBar = () => {
               </Article>
             </>
           )}
+
           {label.input && !isLoading && (
             <Article>
-              <Li>
+              <Li onClick={() => goSearchPage(label.input)}>
                 <IconSearch />
                 <p>
                   <strong>{label.input}</strong>
@@ -112,6 +118,7 @@ const SearchBar = () => {
                   <Li
                     key={word.sickCd}
                     className={idx === index ? 'selected' : 'none'}
+                    onClick={() => goSearchPage(word.sickNm)}
                   >
                     {word.sickNm}
                   </Li>
@@ -138,7 +145,7 @@ const Wrap = styled.div`
   width: 490px;
 `;
 
-const Main = styled.main`
+const Form = styled.form`
   position: relative;
 `;
 
@@ -181,8 +188,10 @@ const Li = styled.li`
   align-items: center;
   padding: 8px 0;
 
-  &.selected {
+  &.selected,
+  &:hover {
     font-weight: 800;
+    cursor: pointer;
   }
 
   > svg {

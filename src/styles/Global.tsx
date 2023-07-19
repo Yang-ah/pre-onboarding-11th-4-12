@@ -34,8 +34,8 @@ export const GlobalStyle = createGlobalStyle`
   }
 
   a {
-    color: black;
     outline: none;
     text-decoration: none;
+    color: inherit;
   }
 `;

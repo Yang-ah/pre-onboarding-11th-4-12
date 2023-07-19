@@ -14,7 +14,7 @@ const useClickOutside = (ref: any) => {
     return () => {
       window.removeEventListener('click', handleClickOutside);
     };
-  }, []);
+  }, [isOpen, setIsOpen]);
 
   return { ref, isOpen, setIsOpen };
 };
