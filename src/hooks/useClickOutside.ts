@@ -1,12 +1,11 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 
-const useClickOutside = () => {
-  const ref = useRef<HTMLDivElement | null>(null);
+const useClickOutside = (ref: any) => {
   const [isOpen, setIsOpen] = useState(false);
 
   const handleClickOutside = (event: MouseEvent) => {
     if (ref.current && isOpen && !ref.current.contains(event.target as Node)) {
-      setIsOpen(false);
+      return setIsOpen(false);
     }
   };
 

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { useClickOutside, useGetKeywords, useHandleKeydown } from '../../hooks';
@@ -7,11 +7,13 @@ import { Button } from '../Common';
 
 const SearchBar = () => {
   const navigate = useNavigate();
+  const ref = useRef(null);
+
   const [label, setLabel] = useState({ input: '', keyword: '' });
 
   const { isLoading, setIsLoading, keywords, getKeywords } = useGetKeywords();
   const { index, setIndex, changeIndex } = useHandleKeydown();
-  const { isOpen, setIsOpen, ref } = useClickOutside();
+  const { isOpen, setIsOpen } = useClickOutside(ref);
 
   const arrayLength = keywords.length;
 
@@ -44,7 +46,7 @@ const SearchBar = () => {
   }, [keywords, index]);
 
   return (
-    <Wrap ref={ref}>
+    <Wrap>
       <Main>
         <Label>
           <IconSearch />
@@ -55,6 +57,7 @@ const SearchBar = () => {
             placeholder="질환명을 입력해주세요."
             value={label.keyword}
             onClick={() => setIsOpen(true)}
+            ref={ref}
           />
         </Label>
         <SearchButton>
