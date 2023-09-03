@@ -194,4 +194,14 @@ const [label, setLabel] = useState({ input: '', keyword: '' });
 - useEffect 활용하여, keywords와 index가 변할 때마다 표시되는 검색어가 다름.
 - 입력 시엔 index === -1로 설정하여 선택된 검색어를 입력값으로 변경
 
+<br>
+<br>
+
+## 🍋 데모 영상 
+
+<br>
+
+|초기 화면| 검색 중 |
+|--|--|
+|<img width=430 src="https://github.com/Yang-ah/pre-onboarding-11th-4-12/assets/97151214/1a75f2ea-3000-469d-b0ba-aaa95f7903fa"/>|<img width=400  src="https://github.com/Yang-ah/pre-onboarding-11th-4-12/assets/97151214/e51f73b2-51e9-423d-b7dd-7e745efcb15a" />|
 
